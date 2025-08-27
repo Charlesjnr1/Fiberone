@@ -31,4 +31,3 @@ openpyxl==3.1.5
 XlsxWriter==3.2.3
 passlib==1.7.4
 Flask-Mail==0.10.0
-dateutil==1.17.0
