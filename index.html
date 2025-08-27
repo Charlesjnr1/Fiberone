@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transform X Scoreboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .logo-container img {
+      height: 50px;
+      margin-bottom: 10px;
+    }
+    .logo-placeholder {
+      height: 50px;
+      width: 180px;
+      background: #001f3f;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 5px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    h1 {
+      color: #001f3f;
+      font-size: 2.5rem;
+      margin: 0;
+      padding: 10px 20px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    h1:hover {
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateY(-2px);
+    }
+    .scoreboard {
+      display: flex;
+      justify-content: space-around;
+      align-items: stretch;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .team {
+      border: 2px solid #ddd;
+      padding: 25px;
+      border-radius: 15px;
+      flex: 1;
+      min-width: 300px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    #team1 {
+      background: linear-gradient(135deg, #f15a69ff 0%, #f73734ff 100%);
+    }
+    #team2 {
+      background: linear-gradient(135deg, #379ef3ff 0%, #0a7fdfff 100%);
+    }
+    .team:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+    .team-name {
+      font-size: 1.5em;
+      font-weight: bold;
+      width: 100%;
+      text-align: center;
+      border: none;
+      border-bottom: 3px solid #001f3f;
+      color: #001f3f;
+      margin-bottom: 25px;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 5px;
+      transition: all 0.3s ease;
+    }
+    .team-name:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.5);
+    }
+    .balls {
+      display: flex;
+      justify-content: space-around;
+      margin: 15px 0;
+    }
+    .ball {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      font-size: 1.2em;
+    }
+    .ball:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    .ball:active {
+      transform: scale(0.95);
+    }
+    .ball.red { 
+      background: linear-gradient(145deg, #ff4b4b, #d10000); 
+      color: white; 
+    }
+    .ball.white { 
+      background: linear-gradient(145deg, #ffffff, #e6e6e6); 
+      color: #333; 
+      border: 2px solid #ccc;
+    }
+    .ball.gray { 
+      background: linear-gradient(145deg, #9e9e9e, #616161); 
+      color: white; 
+    }
+    .score-container {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 10px;
+      border: 2px dashed rgba(0, 0, 0, 0.2);
+    }
+    .score-label {
+      font-size: 1.2em;
+      color: #001f3f;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .score {
+      font-size: 3em;
+      font-weight: bold;
+      color: #001f3f;
+      transition: all 0.5s ease;
+    }
+    .score.changed {
+      animation: pulse 0.5s ease;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    .controls {
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
+    }
+    .controls.show {
+      max-height: 100px;
+    }
+    button {
+      margin: 5px;
+      padding: 12px 25px;
+      font-size: 1.1em;
+      cursor: pointer;
+      border: none;
+      border-radius: 50px;
+      background: #001f3f;
+      color: white;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    button:hover {
+      background: #003366;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .admin-key {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      width: 40px;
+      height: 40px;
+      background: rgba(0, 31, 63, 0.1);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+    .admin-key:hover {
+      background: rgba(0, 31, 63, 0.2);
+      transform: scale(1.1);
+    }
+    .admin-key::after {
+      content: "🔑";
+      font-size: 20px;
+    }
+    .winner {
+      font-size: 2.5em;
+      font-weight: bold;
+      color: #001f3f;
+      margin: 30px 0;
+      padding: 20px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+      transition: all 0.5s ease;
+      display: none;
+    }
+    .winner.show {
+      display: block;
+      animation: celebrate 1s ease;
+    }
+    @keyframes celebrate {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .legend {
+      margin: 30px auto;
+      padding: 15px;
+      background: white;
+      border-radius: 10px;
+      max-width: 500px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    .legend-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #001f3f;
+      font-size: 1.2em;
+    }
+    .legend-items {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin: 5px 10px;
+    }
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .history-panel {
+      margin: 30px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      max-width: 600px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
+    .history-panel.show {
+      display: block;
+    }
+    .history-title {
+      font-weight: bold;
+      color: #001f3f;
+      margin-bottom: 15px;
+      font-size: 1.3em;
+    }
+    .history-list {
+      max-height: 200px;
+      overflow-y: auto;
+      text-align: left;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 5px;
+    }
+    .history-item {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+    }
+    .footer {
+      margin-top: 40px;
+      color: #666;
+      font-size: 0.9em;
+    }
+    
+    /* Login Modal Styles */
+    .login-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .login-modal.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .login-form {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      width: 300px;
+      max-width: 90%;
+    }
+    .login-form h2 {
+      margin-top: 0;
+      color: #001f3f;
+    }
+    .login-form input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    .login-form button {
+      width: 100%;
+      margin-top: 10px;
+    }
+    .login-error {
+      color: red;
+      font-size: 0.9em;
+      margin-top: 5px;
+      display: none;
+    }
+    .login-error.show {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      .scoreboard {
+        flex-direction: column;
+        align-items: center;
+      }
+      .team {
+        width: 90%;
+        margin-bottom: 20px;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Modal -->
+  <div class="login-modal" id="loginModal">
+    <div class="login-form">
+      <h2>Admin Login</h2>
+      <p>Enter credentials to access admin controls</p>
+      <input type="text" id="username" placeholder="Username">
+      <input type="password" id="password" placeholder="Password">
+      <div class="login-error" id="loginError">Invalid username or password</div>
+      <button onclick="attemptLogin()">Login</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <div class="logo-container">
+        <img src="img/FB_logo.png" alt="Transform X Logo">
+      </div>
+      <h1 contenteditable="true">GiGa School Competition</h1>
+    </div>
+
+    <div class="scoreboard">
+      <div class="team" id="team1">
+        <input type="text" class="team-name" value="Team Red" id="team1Name">
+        <div class="balls">
+          <div class="ball red" onclick="addScore('team1', 'red')" id="team1-red" title="Red Ball - 10 points">0</div>
+          <div class="ball white" onclick="addScore('team1', 'white')" id="team1-white" title="White Ball - 5 points">0</div>
+          <div class="ball gray" onclick="addScore('team1', 'gray')" id="team1-gray" title="Gray Ball - 3 points">0</div>
+        </div>
+        <div class="score-container">
+          <div class="score-label">Total Score</div>
+          <div class="score" id="score-team1">0</div>
+        </div>
+      </div>
+
+      <div class="team" id="team2">
+        <input type="text" class="team-name" value="Team Blue" id="team2Name">
+        <div class="balls">
+          <div class="ball red" onclick="addScore('team2', 'red')" id="team2-red" title="Red Ball - 10 points">0</div>
+          <div class="ball white" onclick="addScore('team2', 'white')" id="team2-white" title="White Ball - 5 points">0</div>
+          <div class="ball gray" onclick="addScore('team2', 'gray')" id="team2-gray" title="Gray Ball - 3 points">0</div>
+        </div>
+        <div class="score-container">
+          <div class="score-label">Total Score</div>
+          <div class="score" id="score-team2">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls" id="controlsPanel">
+      <button onclick="undo()" id="undoBtn" title="Undo last action">Undo</button>
+      <button onclick="redo()" id="redoBtn" title="Redo last undone action">Redo</button>
+      <button onclick="toggleHistory()" title="View score history">Show History</button>
+      <button onclick="declareWinner()" title="Declare the winning team">Declare Winner</button>
+      <button onclick="restartGame()" title="Reset the game">Restart Game</button>
+    </div>
+
+    <div class="winner" id="winnerDisplay"></div>
+
+    <div class="history-panel" id="historyPanel">
+      <div class="history-title">Score History</div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-title">Scoring System</div>
+      <div class="legend-items">
+        <div class="legend-item">
+          <div class="legend-color" style="background: red;"></div>
+          <span>Red Ball - 10 points</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: white; border: 1px solid #ccc;"></div>
+          <span>White Ball - 5 points</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: gray;"></div>
+          <span>Gray Ball - 3 points</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- More visible admin key -->
+    <div class="admin-key" id="adminKey" title="Click to access admin controls"></div>
+  </div>
+
+  <div class="footer">
+    Internet for Every School. Opportunity for Every Young Person.
+  </div>
+  
+  <script>
+    const points = { red: 10, white: 5, gray: 3 };
+    let history = [];
+    let redoStack = [];
+    let historyEntries = [];
+    let controlsVisible = false;
+    let isLoggedIn = false;
+
+    // Show login modal when admin key is clicked
+    document.getElementById('adminKey').addEventListener('click', function() {
+      if (!isLoggedIn) {
+        showLoginModal();
+      } else {
+        toggleControls();
+      }
+    });
+
+    // Function to show login modal
+    function showLoginModal() {
+      document.getElementById('loginModal').classList.add('show');
+      document.getElementById('loginError').classList.remove('show');
+    }
+
+    // Function to hide login modal
+    function hideLoginModal() {
+      document.getElementById('loginModal').classList.remove('show');
+    }
+
+    // Function to attempt login
+    function attemptLogin() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      // Simple authentication (in a real app, this would be more secure)
+      if (username === 'admin' && password === 'password') {
+        isLoggedIn = true;
+        hideLoginModal();
+        toggleControls();
+        
+        // Show success message
+        showMessage('Login successful! Admin controls enabled.');
+      } else {
+        // Show error
+        document.getElementById('loginError').classList.add('show');
+      }
+    }
+
+    // Function to show temporary message
+    function showMessage(text) {
+      const message = document.createElement('div');
+      message.textContent = text;
+      message.style.position = 'fixed';
+      message.style.top = '20px';
+      message.style.left = '50%';
+      message.style.transform = 'translateX(-50%)';
+      message.style.background = '#001f3f';
+      message.style.color = 'white';
+      message.style.padding = '10px 20px';
+      message.style.borderRadius = '5px';
+      message.style.zIndex = '1000';
+      document.body.appendChild(message);
+      
+      setTimeout(() => {
+        document.body.removeChild(message);
+      }, 2000);
+    }
+
+    // Function to toggle admin controls
+    function toggleControls() {
+      if (!isLoggedIn) {
+        showLoginModal();
+        return;
+      }
+      
+      const controlsPanel = document.getElementById('controlsPanel');
+      controlsVisible = !controlsVisible;
+      
+      if (controlsVisible) {
+        controlsPanel.classList.add('show');
+        showMessage('Admin controls enabled');
+      } else {
+        controlsPanel.classList.remove('show');
+        showMessage('Admin controls disabled');
+      }
+    }
+
+    // Keyboard shortcut (Ctrl+Shift+A) to toggle controls
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        toggleControls();
+      }
+    });
+
+    function updateButtonStates() {
+      document.getElementById('undoBtn').disabled = history.length === 0;
+      document.getElementById('redoBtn').disabled = redoStack.length === 0;
+    }
+
+    function addScore(team, color) {
+      const ball = document.getElementById(`${team}-${color}`);
+      let count = parseInt(ball.textContent) + 1;
+      ball.textContent = count;
+      
+      // Add animation effect
+      ball.style.transform = "scale(1.3)";
+      setTimeout(() => ball.style.transform = "scale(1)", 200);
+
+      const scoreId = `score-${team}`;
+      const scoreElem = document.getElementById(scoreId);
+      const currentScore = parseInt(scoreElem.textContent);
+      const newScore = currentScore + points[color];
+      scoreElem.textContent = newScore;
+      
+      // Add score change animation
+      scoreElem.classList.add('changed');
+      setTimeout(() => scoreElem.classList.remove('changed'), 500);
+
+      // Get team name for history
+      const teamName = document.getElementById(`${team}Name`).value;
+      
+      // Add to history
+      const action = { team, color, teamName, points: points[color], previousScore: currentScore };
+      history.push(action);
+      redoStack = [];
+      
+      // Add to history entries for display
+      historyEntries.push({
+        action: 'add',
+        team: teamName,
+        color,
+        points: points[color],
+        time: new Date().toLocaleTimeString()
+      });
+      
+      updateButtonStates();
+      updateHistoryDisplay();
+    }
+
+    function undo() {
+      if (history.length === 0) return;
+      
+      const lastAction = history.pop();
+      const { team, color, previousScore } = lastAction;
+      
+      const ball = document.getElementById(`${team}-${color}`);
+      let count = parseInt(ball.textContent) - 1;
+      if (count < 0) count = 0;
+      ball.textContent = count;
+
+      const scoreId = `score-${team}`;
+      const scoreElem = document.getElementById(scoreId);
+      scoreElem.textContent = previousScore;
+      
+      // Add score change animation
+      scoreElem.classList.add('changed');
+      setTimeout(() => scoreElem.classList.remove('changed'), 500);
+
+      redoStack.push(lastAction);
+      
+      // Add to history entries for display
+      const teamName = document.getElementById(`${team}Name`).value;
+      historyEntries.push({
+        action: 'undo',
+        team: teamName,
+        color,
+        points: points[color],
+        time: new Date().toLocaleTimeString()
+      });
+      
+      updateButtonStates();
+      updateHistoryDisplay();
+    }
+
+    function redo() {
+      if (redoStack.length === 0) return;
+      
+      const nextAction = redoStack.pop();
+      const { team, color } = nextAction;
+      
+      const ball = document.getElementById(`${team}-${color}`);
+      let count = parseInt(ball.textContent) + 1;
+      ball.textContent = count;
+      
+      // Add animation effect
+      ball.style.transform = "scale(1.3)";
+      setTimeout(() => ball.style.transform = "scale(1)", 200);
+
+      const scoreId = `score-${team}`;
+      const scoreElem = document.getElementById(scoreId);
+      const currentScore = parseInt(scoreElem.textContent);
+      const newScore = currentScore + points[color];
+      scoreElem.textContent = newScore;
+      
+      // Add score change animation
+      scoreElem.classList.add('changed');
+      setTimeout(() => scoreElem.classList.remove('changed'), 500);
+
+      history.push(nextAction);
+      
+      // Add to history entries for display
+      const teamName = document.getElementById(`${team}Name`).value;
+      historyEntries.push({
+        action: 'redo',
+        team: teamName,
+        color,
+        points: points[color],
+        time: new Date().toLocaleTimeString()
+      });
+      
+      updateButtonStates();
+      updateHistoryDisplay();
+    }
+
+    function declareWinner() {
+      const score1 = parseInt(document.getElementById("score-team1").textContent);
+      const score2 = parseInt(document.getElementById("score-team2").textContent);
+      const name1 = document.getElementById("team1Name").value;
+      const name2 = document.getElementById("team2Name").value;
+      const winnerDisplay = document.getElementById("winnerDisplay");
+
+      let winnerText = "";
+      if (score1 > score2) {
+        winnerText = `${name1} Wins! 🎉`;
+        winnerDisplay.style.background = "linear-gradient(135deg, #ffcdd2, #ef5350)";
+      } else if (score2 > score1) {
+        winnerText = `${name2} Wins! 🎉`;
+        winnerDisplay.style.background = "linear-gradient(135deg, #bbdefb, #2196f3)";
+      } else {
+        winnerText = "It's a Tie! 🤝";
+        winnerDisplay.style.background = "linear-gradient(135deg, #d4fc79, #96e6a1)";
+      }
+      
+      winnerDisplay.textContent = winnerText;
+      winnerDisplay.classList.add('show');
+      
+      // Scroll to winner display
+      winnerDisplay.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function restartGame() {
+      // Confirm before restarting
+      if (!confirm("Are you sure you want to restart the game? All scores will be reset.")) {
+        return;
+      }
+      
+      ["team1", "team2"].forEach(team => {
+        ["red", "white", "gray"].forEach(color => {
+          document.getElementById(`${team}-${color}`).textContent = "0";
+        });
+        document.getElementById(`score-${team}`).textContent = "0";
+      });
+      
+      history = [];
+      redoStack = [];
+      historyEntries = [];
+      
+      document.getElementById("winnerDisplay").classList.remove('show');
+      document.getElementById("winnerDisplay").textContent = "";
+      
+      updateButtonStates();
+      updateHistoryDisplay();
+    }
+
+    function toggleHistory() {
+      const historyPanel = document.getElementById('historyPanel');
+      historyPanel.classList.toggle('show');
+    }
+
+    function updateHistoryDisplay() {
+      const historyList = document.getElementById('historyList');
+      historyList.innerHTML = '';
+      
+      if (historyEntries.length === 0) {
+        historyList.innerHTML = '<div class="history-item">No actions recorded yet</div>';
+        return;
+      }
+      
+      // Display history in reverse order (newest first)
+      const reversedHistory = [...historyEntries].reverse();
+      
+      reversedHistory.forEach(entry => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        
+        let actionText = '';
+        let colorStyle = '';
+        
+        switch(entry.action) {
+          case 'add':
+            actionText = `added ${entry.points} points with ${entry.color} ball`;
+            colorStyle = 'color: green;';
+            break;
+          case 'undo':
+            actionText = `undid ${entry.points} points from ${entry.color} ball`;
+            colorStyle = 'color: orange;';
+            break;
+          case 'redo':
+            actionText = `redid ${entry.points} points with ${entry.color} ball`;
+            colorStyle = 'color: blue;';
+            break;
+        }
+        
+        item.innerHTML = `
+          <strong>${entry.team}</strong> ${actionText} 
+          <span style="font-size: 0.8em; color: #666;">(${entry.time})</span>
+        `;
+        item.style = colorStyle;
+        
+        historyList.appendChild(item);
+      });
+    }
+
+    // Initialize button states
+    updateButtonStates();
+  </script>
+</body>
+</html>
